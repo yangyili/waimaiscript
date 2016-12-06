@@ -1,5 +1,4 @@
-﻿var ksid = localStorage.ksid;
-function loadJquery() {
+﻿function loadJquery() {
 	var script = document.createElement("script");
 	script.setAttribute("src", "https://code.jquery.com/jquery-1.12.4.js");
 	document.body.appendChild(script);
@@ -105,7 +104,7 @@ var Eleme = function () {
 			//ksid = localStorage.ksid
 		if(orderId) {
 			$.ajax({
-				url: 'http://app-api.shop.ele.me/nevermore/invoke/',
+				url: 'https://app-api.shop.ele.me/nevermore/invoke/',
 				type: 'post',
 				contentType: 'application/json; charset=UTF-8',
 				data: JSON.stringify({
@@ -135,10 +134,8 @@ var Eleme = function () {
 $(document).off('click', '.card-order [ng-click^="print"]').on('click', '.card-order [ng-click^="print"]', function (e) {
 	alert(JSON.stringify(Eleme.getOrder($(e.target))));
 });
-$('iframe[src="https://melody.shop.ele.me/module/order/app/query"]').load(function() {
-	$(document).off('click', '.card .card-footer .buttons .left .btn-default').on('click', '.card .card-footer .buttons .left .btn-default', function(e) {
-		var $target = $(e.target);
-		if($target.text().indexOf('打印订单') == -1) return;
-		Eleme.getOrderDetail(e.target);
-	});
+$(document).off('click', '.card .card-footer .buttons .left .btn-default').on('click', '.card .card-footer .buttons .left .btn-default', function(e) {
+	var $target = $(e.target);
+	if($target.text().indexOf('打印订单') == -1) return;
+	Eleme.getOrderDetail(e.target);
 });
