@@ -50,15 +50,15 @@ var Eleme = function () {
 			originalOrder = scope ? scope.order : order,
 			userNameSex = originalOrder.consigneeName.split(' '),
 			userSex = userNameSex[1] || '',
-			orderSubmitTime = originalOrder.activeTime && originalOrder.activeTime.replace(/[T]/g, ' '),
-			bookedTime = originalOrder.bookedTime && originalOrder.bookedTime.replace(/[T]/g, ' ') ,
+			orderSubmitTime = originalOrder.activeTime && originalOrder.activeTime.replace(/[T:\-]/g, ''),
+			bookedTime = originalOrder.bookedTime && originalOrder.bookedTime.replace(/[T:\-]/g, '') ,
 			orderGroup = _.groupBy(originalOrder.groups, 'type'),
 			foodGroup = orderGroup.normal || orderGroup.NORMAL || [],
 			extraGroup = orderGroup.extra || orderGroup.EXTRA || [],
 			foodLst = $.map(foodGroup, function(group) {
 				return $.map(group.items, function (item) {
 					var foodNameUnit = item.name.split('-');
-					return {foodName: foodNameUnit[0], unit: foodNameUnit[1] || '份', price: item.price.toString(), number: item.quantity.toString(), remark: ''};
+					return {foodName: foodNameUnit[0].replace(/【抢】\s*/g, ''), unit: foodNameUnit[1] || '份', price: item.price.toString(), number: item.quantity.toString(), remark: ''};
 				});
 			}).reduce(function(a, b) {return a.concat(b)}, []),
 			foodAmount = $.map(foodLst, function(food) {return parseFloat(food.price)*parseFloat(food.number);})
@@ -88,8 +88,8 @@ var Eleme = function () {
 			orderTotalAmount: originalOrder.goodsTotal.toFixed(2),
 			orderReceivableAmount: (originalOrder.goodsTotal - orderFreeTotal).toFixed(2),
 			orderSubmitTime: orderSubmitTime,
-			orderDeliveryTime: bookedTime || orderSubmitTime,
-			bookedTime: bookedTime,
+			orderDeliveryTime: bookedTime || orderSubmitTime || '',
+			bookedTime: bookedTime || '',
 			payStatus: isOrderPaid ? '1' : '0',
 			paidRealAmount: isOrderPaid ? originalOrder.payAmount.toFixed(2) : '0',
 			shopRealAmount: originalOrder.income.toFixed(2),
@@ -121,6 +121,9 @@ var Eleme = function () {
 						return;
 					}
 					alert(JSON.stringify(orderInfo(null, data.result)));
+				},
+				error: function (data) {
+					console.log('saas获取订单信息失败！', data);
 				}
 			})
 		}
