@@ -99,11 +99,13 @@ var Eleme = function () {
 		};
 	};
 	function getOrderDetail(target) {
-		var orderId = ($(target).parents('.card').find('.meta-data .ul-reset li:last').text().match(/\d+/g) || [])[0],
+		var orderId_1 = ($(target).parents('.card').find('.meta-data .ul-reset li:last').text().match(/\d+/g) || [])[0],
+		    orderId_2 = ($(target).parents('.card-footer').find('.color-black-assist p').text().match(/\d+/g) || [])[0],
+		    orderId = orderId_1 || orderId_2,
 			id = createID();
-			//ksid = localStorage.ksid
 		if(orderId) {
 			$.ajax({
+				timeout: '2500',
 				url: 'https://app-api.shop.ele.me/nevermore/invoke/',
 				type: 'post',
 				contentType: 'application/json; charset=UTF-8',
@@ -112,7 +114,7 @@ var Eleme = function () {
 					method: "getOrderDetail",
 					service: "OrderService",
 					params: {orderId: orderId},
-					metas: {appName: "melody", appVersion: "4.4.0", ksid: ksid},
+					metas: {appName: "melody", appVersion: "4.4.0", ksid: localStorage.ksid},
 					ncp: "2.0.0"
 				}),
 				success: function (data) {
@@ -142,3 +144,24 @@ $(document).off('click', '.card .card-footer .buttons .left .btn-default').on('c
 	if($target.text().indexOf('打印订单') == -1) return;
 	Eleme.getOrderDetail(e.target);
 });
+$(document).off('click', '.order-query .order-list .order-card .card-footer .order-btn').on('click', '.order-query .order-list .order-card .card-footer .order-btn', function(e) {
+	var $tar = $(e.target);
+	if($tar.text().indexOf('打印订单') == -1) return;
+	Eleme.getOrderDetail(e.target);
+});
+setTimeout(function() {
+    if (wmSystemApi.AutoPrint())
+    {
+            console.log("log", "执行自动打印");
+            var itemLst = $("li:contains(订单号)");
+            var btnLst = $("button:contains(打印订单)");
+            for (i = 0; i<itemLst.length; i++)
+            {
+                var orderID = itemLst[i].innerText;
+                if (wmSystemApi.NeedPrint(orderID))
+                {
+                    btnLst[i].click();
+                }
+            }
+    }
+}, 3000);
