@@ -55,19 +55,20 @@ var Eleme = function () {
 			orderGroup = _.groupBy(originalOrder.groups, 'type'),
 			foodGroup = orderGroup.normal || orderGroup.NORMAL || [],
 			extraGroup = orderGroup.extra || orderGroup.EXTRA || [],
-			foodLst = $.map(foodGroup, function(group) {
+			goodsCount = (_.result(originalOrder, 'goodsSummary', '').match(/\d+/g) || ['0'])[0],
+			orderDayNo = parseFloat(originalOrder.daySn) < 10 ? '0' + originalOrder.daySn : originalOrder.daySn + '',
+			deliverAmount = originalOrder.deliveryFee || originalOrder.deliveryFeeTotal || originalOrder.deliveryCost || _.result(_.find(_.result(extraGroup[0], 'items', []), {name: '配送费'}), 'price', 0),
+			orderFreeTotal = originalOrder.goodsTotal - originalOrder.payAmount + deliverAmount,
+			isOrderPaid = originalOrder.paymentStatus == 'success' || originalOrder.paymentStatus == 'SUCCESS',discountGroup = orderGroup.discount || orderGroup.DISCOUNT || [],
+			sendGroup = _.find(discountGroup, {name: '赠品'}),
+			foodLst = $.map(foodGroup.concat(sendGroup || []), function(group) {
 				return $.map(group.items, function (item) {
 					var foodNameUnit = item.name.split('-');
 					return {foodName: foodNameUnit[0].replace(/【抢】\s*/g, ''), unit: foodNameUnit[1] || '份', price: item.price.toString(), number: item.quantity.toString(), remark: ''};
 				});
 			}).reduce(function(a, b) {return a.concat(b)}, []),
 			foodAmount = $.map(foodLst, function(food) {return parseFloat(food.price)*parseFloat(food.number);})
-				.reduce(function(a, b) {return a + b;}),
-			foodCount = $.map(foodLst, function(food) {return parseInt(food.number);}).reduce(function(a,b){return a+ b;}),
-			orderDayNo = parseFloat(originalOrder.daySn) < 10 ? '0' + originalOrder.daySn : originalOrder.daySn + '',
-			deliverAmount = originalOrder.deliveryFee || originalOrder.deliveryFeeTotal || originalOrder.deliveryCost || _.result(_.find(_.result(extraGroup[0], 'items', []), {name: '配送费'}), 'price', 0),
-			orderFreeTotal = originalOrder.goodsTotal - originalOrder.payAmount + deliverAmount,
-			isOrderPaid = originalOrder.paymentStatus == 'success' || originalOrder.paymentStatus == 'SUCCESS';
+				.reduce(function(a, b) {return a + b;});
 		return {
 			channelName: '饿了么',
 			channelOrderNo: orderSubmitTime.substr(0, 8) + '-' + orderDayNo,
@@ -78,7 +79,7 @@ var Eleme = function () {
 			userAddress: originalOrder.consigneeAddress,
 			userAddressDistance: originalOrder.distance,
 			orderRemark: originalOrder.remark,
-			foodCount: foodCount.toString(),
+			foodCount: goodsCount.toString(),
 			foodBoxCount: '1',
 			foodAmount: foodAmount.toFixed(2),
 			foodBoxAmount: originalOrder.packageFee.toFixed(2),
@@ -100,7 +101,7 @@ var Eleme = function () {
 	};
 	function getOrderDetail(target) {
 		var orderId_1 = ($(target).parents('.card').find('.meta-data .ul-reset li:last').text().match(/\d+/g) || [])[0],
-		    orderId_2 = ($(target).parents('.card-footer').find('.color-black-assist p').text().match(/\d+/g) || [])[0],
+		    orderId_2 = ($(target).parents('.card-footer').find('.color-black-assist p:last').text().match(/\d+/g) || [])[0],
 		    orderId = orderId_1 || orderId_2,
 			id = createID();
 		if(orderId) {
