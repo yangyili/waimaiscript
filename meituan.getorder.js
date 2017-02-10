@@ -1,4 +1,4 @@
-﻿//  version 1.0
+//  version 1.0
 var Common = function (window, $) {
     var formatTimeStamp = function (timestamp) {
         if(!timestamp) return '';
@@ -29,7 +29,7 @@ var Meituan = (function (window, jQuery) {
                 var order = data.data[0],
                     userSex = ((order.recipient_name || '').match(/[\(（][\u4e00-\u9fa5]+[\)）]/g) || [''])[0],
                     orderTime = (order.order_time_fmt || '').replace(/[-:\s]/g, '') || Common.formatTimeStamp(order.order_time*1000),
-                    deliverBookTime = order.delivery_btime_fmt ? order.delivery_btime_fmt.replace(/[-:\s]/g, '') : orderTime,
+                    deliverBookTime = order.delivery_btime_fmt && order.delivery_btime_fmt.replace(/[-:\s]/g, ''),
                     //服务费用使用折扣前的金额计算
                     foodAmount = _.map(order.cartDetailVos, function(cart) {return cart.cartAmount}).reduce(function(amount1, amount2){return amount1 + amount2;}, 0),
                     foodBoxCount = 0,
@@ -140,3 +140,23 @@ $(document).ready(function() {
         Meituan.addCookieDeviceId();
     }
 });
+setTimeout(function() {     
+    if (wmSystemApi.AutoPrint())        
+    {       
+        var path = document.location.href;      
+        if(path == "http://e.waimai.meituan.com/v2/order/history")      
+        {       
+            console.log("log", "执行自动打印");       
+            var itemLst = $("span.pull-right.J-search-viewid");     
+            var btnLst = $("button.btn.btn-default.J-print-order.ubl");     
+            for (i = 0; i<itemLst.length; i++)      
+            {       
+                var orderID = itemLst[i].innerText;     
+                if (wmSystemApi.NeedPrint(orderID))     
+                {       
+                    btnLst[i].click();      
+                }       
+            }       
+        }       
+    }       
+}, 2000);

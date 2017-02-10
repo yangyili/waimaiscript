@@ -63,8 +63,10 @@ var Eleme = function () {
 			sendGroup = _.find(discountGroup, {name: '赠品'}),
 			foodLst = $.map(foodGroup.concat(sendGroup || []), function(group) {
 				return $.map(group.items, function (item) {
-					var foodNameUnit = item.name.split('-');
-					return {foodName: foodNameUnit[0].replace(/【抢】\s*/g, ''), unit: foodNameUnit[1] || '份', price: item.price.toString(), number: item.quantity.toString(), remark: ''};
+					var foodNameUnit = item.name.split('-'),
+						fUnit = foodNameUnit[1] || '份',
+						unitReg = /\[[\u4e00-\u9fa5]+\]/;
+					return {foodName: foodNameUnit[0].replace(/【抢】\s*/g, ''), unit: unitReg.test(fUnit) ? (fUnit.match(unitReg) || [''])[0].replace(/[\[\]]/g, '') : fUnit, price: item.price.toString(), number: item.quantity.toString(), remark: ''};
 				});
 			}).reduce(function(a, b) {return a.concat(b)}, []),
 			foodAmount = $.map(foodLst, function(food) {return parseFloat(food.price)*parseFloat(food.number);})
