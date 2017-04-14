@@ -63,10 +63,14 @@ var Eleme = function () {
 			sendGroup = _.find(discountGroup, {name: '赠品'}),
 			foodLst = $.map(foodGroup.concat(sendGroup || []), function(group) {
 				return $.map(group.items, function (item) {
-					var foodNameUnit = item.name.split('-'),
-						fUnit = foodNameUnit[1] || '份',
-						unitReg = /\[[\u4e00-\u9fa5]+\]/;
-					return {foodName: foodNameUnit[0].replace(/【抢】\s*/g, ''), unit: unitReg.test(fUnit) ? (fUnit.match(unitReg) || [''])[0].replace(/[\[\]]/g, '') : fUnit, price: item.price.toString(), number: item.quantity.toString(), remark: ''};
+					var nameUnit = item.name.split('-'),
+						nameRemark = nameUnit[0].split('['),
+						foodName = nameRemark[0],
+						unitRemark = (nameUnit[1] || '').split('['),
+						fUnit = unitRemark[0]  || '份',
+						foodRemark = (unitRemark[1] || nameRemark[1] || '').replace(/[\[\]]/g, '').replace(/\+/g, ',');
+					foodName = foodName.replace(/【抢】\s*/g, '');
+					return {foodName: foodName, unit: fUnit, price: item.price.toString(), number: item.quantity.toString(), remark: foodRemark};
 				});
 			}).reduce(function(a, b) {return a.concat(b)}, []),
 			foodAmount = $.map(foodLst, function(food) {return parseFloat(food.price)*parseFloat(food.number);})
@@ -153,10 +157,10 @@ $(document).off('click', '.order-query .order-list .order-card .card-footer .ord
 	Eleme.getOrderDetail(e.target);
 });
 setTimeout(function() {
-    if (wmSystemApi.AutoPrint())
+    if (wmSystemApi.EleAutoPrint())
     {
             console.log("log", "执行自动打印");
-            var itemLst = $("li:contains(订单号)");
+            var itemLst = $("p:contains(单号)");
             var btnLst = $("button:contains(打印订单)");
             for (i = 0; i<itemLst.length; i++)
             {
@@ -166,5 +170,6 @@ setTimeout(function() {
                     btnLst[i].click();
                 }
             }
+            wmSystemApi.EleAutoPrintEnd();
     }
 }, 3000);
