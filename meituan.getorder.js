@@ -1,4 +1,4 @@
-//  version 1.0
+﻿//  version 1.0
 var Common = function (window, $) {
     var formatTimeStamp = function (timestamp) {
         if(!timestamp) return '';
@@ -101,6 +101,7 @@ var Meituan = (function (window, jQuery) {
                 var curOrderChargeInfo = data.data[0];
                 serviceAmount = curOrderChargeInfo.commisionAmount;
                 shopRealAmount = curOrderChargeInfo.settleAmount;
+                wmOrderId = wmOrderId || curOrderChargeInfo.wmOrderId;
                 $.ajax({
                     type: 'post',
                     url: '/v2/order/history/r/print/info',
@@ -140,23 +141,26 @@ $(document).ready(function() {
         Meituan.addCookieDeviceId();
     }
 });
-setTimeout(function() {     
-    if (wmSystemApi.AutoPrint())        
-    {       
-        var path = document.location.href;      
-        if(path == "http://e.waimai.meituan.com/v2/order/history")      
-        {       
-            console.log("log", "执行自动打印");       
-            var itemLst = $("span.pull-right.J-search-viewid");     
-            var btnLst = $("button.btn.btn-default.J-print-order.ubl");     
-            for (i = 0; i<itemLst.length; i++)      
-            {       
-                var orderID = itemLst[i].innerText;     
-                if (wmSystemApi.NeedPrint(orderID))     
-                {       
-                    btnLst[i].click();      
-                }       
-            }       
-        }       
+
+setTimeout(function() {
+    if (wmSystemApi.MeiTuanAutoPrint())
+    {
+        var path = document.location.href;
+        if(path == "http://e.waimai.meituan.com/v2/order/receive/processed")
+        {
+            console.log("log", "执行自动打印");
+            var itemLst = $("span.pull-right.J-search-viewid");
+            var iCnt = 0;
+            for (i = 0; i<itemLst.length; i++)
+            {
+                var orderID = itemLst[i].innerText;
+                if (wmSystemApi.NeedPrint(orderID))
+                {
+                    $("#" + orderID.replace("订单编号：", "") + " button.btn.btn-default.J-print-order.ubl").click();
+                    iCnt = iCnt + 1;
+                }
+            }
+        }
+        wmSystemApi.MeiTuanAutoPrintEnd(iCnt);
     }       
 }, 2000);
