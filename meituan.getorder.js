@@ -58,7 +58,8 @@ var Meituan = (function (window, jQuery) {
                 });
                 var saasOrder = {
                         channelName: '美团外卖',
-                        channelOrderNo: orderTime.substr(0, 8) + '-' + (order.wm_poi_order_dayseq < 10 ? '0' : '') + order.wm_poi_order_dayseq,
+                        //channelOrderNo: orderTime.substr(0, 8) + '-' + (order.wm_poi_order_dayseq < 10 ? '0' : '') + order.wm_poi_order_dayseq,
+                        channelOrderNo: orderTime.substr(0, 8) + '-' + order.wm_poi_order_dayseq,
                         channelOrderKey: order.wm_order_id_view_str,
                         userName: ((order.recipient_name || '').match(/^[\u4e00-\u9fa5\d\w!@#$%^&*_+-=~·;'\[\],./\\，。、、；‘【】《》？：“{}\|<>?:"{}]*[\(（]?/g) || [''])[0].replace(/[\(（]/g, ''),
                         userSex: !userSex ? '2' : userSex.indexOf('女士') != -1 ? '0' : userSex.indexOf('先生') != -1 ? '1' : '2',
@@ -104,9 +105,9 @@ var Meituan = (function (window, jQuery) {
                 wmOrderId = wmOrderId || curOrderChargeInfo.wmOrderId;
                 $.ajax({
                     type: 'post',
-                    url: '/v2/order/history/r/print/info',
+                    url: '/v2/order/history/r/print/info/v2',
                     data: {
-                        wmOrderId: wmOrderId,
+                        wmOrderViewId: wmViewId,
                         wmPoiId: wmPoiId
                     },
                     success: function(data) {
