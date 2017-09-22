@@ -1,8 +1,8 @@
-﻿function loadJquery() {
+﻿/*function loadJquery() {
 	var script = document.createElement("script");
 	script.setAttribute("src", "https://code.jquery.com/jquery-1.12.4.js");
 	document.body.appendChild(script);
-}
+}*/
 var Common = function () {
 	var formatTimeStamp = function (timestamp) {
 		if(!timestamp) return '';
@@ -56,7 +56,8 @@ var Eleme = function () {
 			foodGroup = orderGroup.normal || orderGroup.NORMAL || [],
 			extraGroup = orderGroup.extra || orderGroup.EXTRA || [],
 			goodsCount = (_.result(originalOrder, 'goodsSummary', '').match(/\d+/g) || ['0'])[0],
-			orderDayNo = parseFloat(originalOrder.daySn) < 10 ? '0' + originalOrder.daySn : originalOrder.daySn + '',
+			//orderDayNo = parseFloat(originalOrder.daySn) < 10 ? '0' + originalOrder.daySn : originalOrder.daySn + '',
+			orderDayNo = originalOrder.daySn + '',
 			deliverAmount = originalOrder.deliveryFee || originalOrder.deliveryFeeTotal || originalOrder.deliveryCost || _.result(_.find(_.result(extraGroup[0], 'items', []), {name: '配送费'}), 'price', 0),
 			orderFreeTotal = originalOrder.goodsTotal - originalOrder.payAmount + deliverAmount,
 			isOrderPaid = originalOrder.paymentStatus == 'success' || originalOrder.paymentStatus == 'SUCCESS',discountGroup = orderGroup.discount || orderGroup.DISCOUNT || [],
@@ -134,7 +135,7 @@ var Eleme = function () {
 				error: function (data) {
 					console.log('saas获取订单信息失败！', data);
 				}
-			})
+			});
 		}
 	}
 	return {
@@ -148,28 +149,44 @@ $(document).off('click', '.card-order [ng-click^="print"]').on('click', '.card-o
 });
 $(document).off('click', '.card .card-footer .buttons .left .btn-default').on('click', '.card .card-footer .buttons .left .btn-default', function(e) {
 	var $target = $(e.target);
-	if($target.text().indexOf('打印订单') == -1) return;
+	if($target.text().indexOf('打印') == -1) return;
 	Eleme.getOrderDetail(e.target);
 });
 $(document).off('click', '.order-query .order-list .order-card .card-footer .order-btn').on('click', '.order-query .order-list .order-card .card-footer .order-btn', function(e) {
 	var $tar = $(e.target);
-	if($tar.text().indexOf('打印订单') == -1) return;
+	if($tar.text().indexOf('打印') == -1) return;
 	Eleme.getOrderDetail(e.target);
 });
-setTimeout(function() {
-    if (wmSystemApi.EleAutoPrint())
-    {
-            console.log("log", "执行自动打印");
-            var itemLst = $("p:contains(单号)");
-            var btnLst = $("button:contains(打印订单)");
-            for (i = 0; i<itemLst.length; i++)
-            {
-                var orderID = itemLst[i].innerText;
-                if (wmSystemApi.NeedPrint(orderID))
-                {
-                    btnLst[i].click();
-                }
-            }
-            wmSystemApi.EleAutoPrintEnd();
-    }
-}, 3000);
+function bbbkkk() {
+	if (wmSystemApi.EleAutoPrint())
+	{
+		console.log("log", "执行自动打印");
+		var itemLst = jQuery("p:contains(单号)");
+		var btnLst = jQuery("button:contains(打印订单)");
+		var iCnt = 0;
+		for (i = 0; i<itemLst.length; i++)
+		{
+			var orderID = itemLst[i].innerText;
+			if (wmSystemApi.NeedPrint(orderID))
+			{
+				btnLst[i].click();
+				iCnt = iCnt + 1;
+			}
+		}
+		wmSystemApi.EleAutoPrintEnd(iCnt);
+	}
+};
+
+$.ajax({
+	type: 'post',
+	contentType: 'application/json; charset=UTF-8',
+	url: 'https://app-api.shop.ele.me/nevermore/invoke/',
+	data: JSON.stringify({
+		id: id,
+		method: "getOrderDetail",
+		service: "OrderService",
+		params: {orderId: orderId},
+		metas: {appName: "melody", appVersion: "4.4.0", ksid: localStorage.ksid},
+		ncp: "2.0.0"
+	})
+});
